@@ -30,25 +30,30 @@ jobs:
           pip install -e ./searxng-src
           pip install nuitka zstandard ordered-set
 
-      - name: Build EXE
-        shell: cmd
+      - name: Print versions
         run: |
-          python -m nuitka ^
-            --onefile ^
-            --windows-console-mode=attach ^
-            --include-package=searx ^
-            --include-package-data=searx ^
-            --include-package=flask ^
-            --include-package=flask_babel ^
-            --include-package=babel ^
-            --include-package=httpx ^
-            --include-package=anyio ^
-            --include-package=jinja2 ^
-            --include-package=markupsafe ^
-            --include-package=yaml ^
-            --include-package=msgspec ^
-            --include-package=lxml ^
-            --output-filename=searxng-win.exe ^
+          python --version
+          python -m nuitka --version
+
+      - name: Build EXE
+        shell: pwsh
+        run: |
+          python -m nuitka `
+            --onefile `
+            --windows-console-mode=force `
+            --include-package=searx `
+            --include-package-data=searx `
+            --include-package=flask `
+            --include-package=flask_babel `
+            --include-package=babel `
+            --include-package=httpx `
+            --include-package=anyio `
+            --include-package=jinja2 `
+            --include-package=markupsafe `
+            --include-package=yaml `
+            --include-package=msgspec `
+            --include-package=lxml `
+            --output-filename=searxng-win.exe `
             launcher.py
 
       - name: Upload artifact
