@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+*.pyo
+searxng-src/
+*.exe
+*.dist/
+launcher.build/
+launcher.onefile-build/
+.nuitka-cache/

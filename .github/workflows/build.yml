@@ -1,0 +1,56 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Clone SearXNG
+        run: git clone --depth 1 https://github.com/searxng/searxng.git searxng-src
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install -e ./searxng-src
+          pip install nuitka zstandard ordered-set
+
+      - name: Build EXE
+        shell: cmd
+        run: |
+          python -m nuitka ^
+            --onefile ^
+            --windows-console-mode=attach ^
+            --include-package=searx ^
+            --include-package-data=searx ^
+            --include-package=flask ^
+            --include-package=flask_babel ^
+            --include-package=babel ^
+            --include-package=httpx ^
+            --include-package=anyio ^
+            --include-package=jinja2 ^
+            --include-package=markupsafe ^
+            --include-package=yaml ^
+            --include-package=msgspec ^
+            --include-package=lxml ^
+            --output-filename=searxng-win.exe ^
+            launcher.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: searxng-win
+          path: searxng-win.exe
+          retention-days: 30
