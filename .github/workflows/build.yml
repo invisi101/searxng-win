@@ -10,6 +10,11 @@ concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: true
 
+# Opt the helper actions (checkout/setup-*/upload) into Node 24 ahead of GitHub's
+# 2026 deprecation of Node 20 — clears the "Node.js 20 actions are deprecated" warning.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   build:
     runs-on: windows-latest
