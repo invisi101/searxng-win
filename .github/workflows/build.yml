@@ -5,6 +5,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Newer pushes cancel an in-progress build of the same ref (avoids piled-up runs).
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: windows-latest
@@ -13,16 +18,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.2.2
 
+      # SearXNG ships a few colon-named files (NTFS Alternate Data Streams) that
+      # git refuses to write on Windows unless this protection is relaxed.
       - name: Configure git for Windows paths
         run: git config --global core.protectNTFS false
-
-      - name: Clone SearXNG
-        run: git clone --depth 1 https://github.com/searxng/searxng.git searxng-src
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5.6.0
         with:
           python-version: "3.11"
+
+      - name: Set up Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      # Pinned to a known-good commit so the Windows patches below apply cleanly.
+      # To track upstream: bump this SHA and re-verify apply_windows_patches.py.
+      - name: Clone SearXNG (pinned)
+        run: |
+          git clone https://github.com/searxng/searxng.git searxng-src
+          git -C searxng-src checkout 26fa181b8425e2c60c5d2bab2c8f2aab2c5db6d6
+
+      # Fix the 6 Windows/frozen-build portability bugs (pwd import, path
+      # separators, package-dir scans, the engine loader, error_recorder).
+      - name: Apply Windows/frozen-build patches
+        run: python apply_windows_patches.py searxng-src
+
+      # SearXNG's themes (CSS/JS) are built from client/simple; without this the
+      # UI is unstyled and result templates are missing.
+      - name: Build themes
+        working-directory: searxng-src/client/simple
+        run: |
+          npm install
+          npm run build
 
       - name: Install dependencies
         run: |
@@ -34,8 +63,13 @@ jobs:
       - name: Print versions
         run: |
           python --version
+          node --version
           python -m nuitka --version
 
+      # Flags mirror the verified local build:
+      #   --include-package=pygments  : SearXNG imports a pygments formatter dynamically
+      #   --nofollow-import-to=PIL    : pygments' image formatter drags in PIL (~5MB) we don't need
+      #   --windows-icon-from-ico     : embed the custom icon
       - name: Build EXE
         shell: pwsh
         run: |
@@ -45,6 +79,9 @@ jobs:
             --windows-console-mode=force `
             --include-package=searx `
             --include-package-data=searx `
+            --include-package=pygments `
+            --nofollow-import-to=PIL `
+            --windows-icon-from-ico=searxng-win.ico `
             --output-filename=searxng-win.exe `
             launcher.py
 

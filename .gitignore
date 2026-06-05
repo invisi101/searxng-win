@@ -7,3 +7,4 @@ searxng-src/
 launcher.build/
 launcher.onefile-build/
 .nuitka-cache/
+*.log
