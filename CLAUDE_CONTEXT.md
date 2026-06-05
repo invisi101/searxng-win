@@ -24,9 +24,25 @@ A self-contained Windows `.exe` that runs a local SearXNG instance, opens the de
 - `searxng-local` — Linux shell script installer for SearXNG (the project this Windows version is based on)
 - `searx-mac-local` — Same but for macOS
 
-## Current status
+---
 
-First build just pushed. The EXE may need Nuitka `--include-package` tweaks depending on which SearXNG engines/plugins fail to load due to missing dynamic imports. Iterate by running the EXE on Windows and reporting errors back.
+## Current status (as of 2026-06-05)
+
+A GitHub Actions build is currently in progress (or just completed) — check `https://github.com/invisi101/searxng-win/actions` for the result.
+
+**Build issues already solved:**
+- SearXNG repo has a file with a colon in the name (`searxng.conf:socket`) that breaks git on Windows — fixed with `git config --global core.protectNTFS false` before cloning
+- `pip install -e ./searxng-src` failed because SearXNG's `__init__.py` imports `msgspec` during build evaluation — fixed by pre-installing deps first and using `--no-build-isolation`
+- Nuitka command uses `--include-package=searx --include-package-data=searx` and lets Nuitka follow all other imports automatically
+
+**The working install order** (already in `build.yml`):
+```
+python -m pip install msgspec lxml babel flask flask-babel httpx pyyaml uvicorn
+python -m pip install --no-build-isolation -e ./searxng-src
+python -m pip install nuitka zstandard ordered-set
+```
+
+**Next step:** Once the current build completes, download `searxng-win.exe` from the Actions artifacts and test it. It will likely need further tweaks — SearXNG loads engines dynamically so there may be missing module errors at runtime even if the build succeeds.
 
 ---
 
@@ -54,17 +70,11 @@ git --version
 ### 3. Visual Studio Build Tools (C++ compiler)
 
 ```cmd
-cl
-```
-
-Or check via:
-
-```cmd
 where cl
 ```
 
 - If missing: direct the user to https://visualstudio.microsoft.com/visual-cpp-build-tools/ — tell them to download **Build Tools for Visual Studio**, run the installer, select **"Desktop development with C++"**, and click Install. This is a large download (~5GB). Re-check after install by opening a **new** terminal.
-- Note: the user must run subsequent build commands from a terminal that has the MSVC environment loaded, or use the "Developer Command Prompt for VS" shortcut that the installer creates.
+- Note: build commands must be run from a terminal that has the MSVC environment loaded — use the "Developer Command Prompt for VS" shortcut the installer creates.
 
 ### 4. Nuitka and build helpers
 
@@ -77,12 +87,13 @@ pip show nuitka
 
 ---
 
-Once all prerequisites are confirmed, proceed with the build:
-
 ## Build locally on Windows
 
 ```cmd
+git config --global core.protectNTFS false
 git clone --depth 1 https://github.com/searxng/searxng.git searxng-src
-pip install -e ./searxng-src
-python -m nuitka --onefile --windows-console-mode=attach --include-package=searx --include-package-data=searx --include-package=flask --include-package=flask_babel --include-package=babel --include-package=httpx --include-package=anyio --include-package=jinja2 --include-package=markupsafe --include-package=yaml --include-package=msgspec --include-package=lxml --output-filename=searxng-win.exe launcher.py
+python -m pip install msgspec lxml babel flask flask-babel httpx pyyaml uvicorn
+python -m pip install --no-build-isolation -e ./searxng-src
+python -m pip install nuitka zstandard ordered-set
+python -m nuitka --onefile --assume-yes-for-downloads --windows-console-mode=force --include-package=searx --include-package-data=searx --output-filename=searxng-win.exe launcher.py
 ```
