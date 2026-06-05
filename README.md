@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="searxng-win.png" alt="SearXNG for Windows" width="128">
+</p>
+
 # SearXNG for Windows
 
 A private search engine that runs entirely on your own PC — as a single `.exe`.  Double-click it, your browser opens to a search page, and when you close it nothing is left behind.
