@@ -7,6 +7,15 @@ import threading
 import webbrowser
 import secrets
 import atexit
+import logging
+
+# SearXNG logs noisy but non-fatal messages to stderr: engines that rate-limit or
+# time out, Tor-only engines deactivating, the absent .git in a frozen build, etc.
+# It sets up its own logging and ignores the config in settings.yml, so the only
+# reliable way to keep the console clean for this local single-user app is the
+# global logging.disable() switch (SearXNG never re-enables it). This suppresses
+# everything at ERROR level and below; a genuinely fatal CRITICAL still gets through.
+logging.disable(logging.ERROR)
 
 PORT = 8888
 URL = f"http://127.0.0.1:{PORT}"
