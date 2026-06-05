@@ -28,7 +28,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install msgspec lxml babel flask flask-babel httpx pyyaml uvicorn
-          python -m pip install -e ./searxng-src
+          python -m pip install --no-build-isolation -e ./searxng-src
           python -m pip install nuitka zstandard ordered-set
 
       - name: Print versions
