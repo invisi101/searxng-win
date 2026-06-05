@@ -40,19 +40,10 @@ jobs:
         run: |
           python -m nuitka `
             --onefile `
+            --assume-yes-for-downloads `
             --windows-console-mode=force `
             --include-package=searx `
             --include-package-data=searx `
-            --include-package=flask `
-            --include-package=flask_babel `
-            --include-package=babel `
-            --include-package=httpx `
-            --include-package=anyio `
-            --include-package=jinja2 `
-            --include-package=markupsafe `
-            --include-package=yaml `
-            --include-package=msgspec `
-            --include-package=lxml `
             --output-filename=searxng-win.exe `
             launcher.py
 
