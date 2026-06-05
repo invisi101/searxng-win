@@ -13,11 +13,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.2.2
 
-      - name: Checkout SearXNG
-        uses: actions/checkout@v4.2.2
-        with:
-          repository: searxng/searxng
-          path: searxng-src
+      - name: Configure git for Windows paths
+        run: git config --global core.protectNTFS false
+
+      - name: Clone SearXNG
+        run: git clone --depth 1 https://github.com/searxng/searxng.git searxng-src
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5.6.0
