@@ -87,6 +87,11 @@ pip show nuitka
 
 ---
 
+## Build strategy
+
+- **Local builds (for development):** Nuitka caches its C compilation between runs, so the second build is much faster — only recompiles what changed. Prefer local builds when iterating on fixes.
+- **GitHub Actions (for distribution):** Use this to produce the final `.exe` artifact for users to download. The runner is always fresh so no cache benefit, but it's the clean reproducible build.
+
 ## Build locally on Windows
 
 ```cmd
