@@ -28,13 +28,61 @@ A self-contained Windows `.exe` that runs a local SearXNG instance, opens the de
 
 First build just pushed. The EXE may need Nuitka `--include-package` tweaks depending on which SearXNG engines/plugins fail to load due to missing dynamic imports. Iterate by running the EXE on Windows and reporting errors back.
 
+---
+
+## INSTRUCTIONS FOR CLAUDE: Prerequisites check
+
+Before doing anything else, check whether the required build tools are installed and help the user install any that are missing. Run each check in order and stop to resolve each missing item before continuing.
+
+### 1. Python 3.11
+
+```cmd
+python --version
+```
+
+- If missing or wrong version: direct the user to https://www.python.org/downloads/release/python-3119/ — tell them to download the Windows installer, run it, and **check "Add Python to PATH"** during install. Re-check after install.
+- If a different Python 3.x is installed and Nuitka won't build, help the user install 3.11 alongside it using the Python Launcher (`py -3.11`).
+
+### 2. Git
+
+```cmd
+git --version
+```
+
+- If missing: direct the user to https://git-scm.com/download/win — tell them to run the installer with default options. Re-check after install.
+
+### 3. Visual Studio Build Tools (C++ compiler)
+
+```cmd
+cl
+```
+
+Or check via:
+
+```cmd
+where cl
+```
+
+- If missing: direct the user to https://visualstudio.microsoft.com/visual-cpp-build-tools/ — tell them to download **Build Tools for Visual Studio**, run the installer, select **"Desktop development with C++"**, and click Install. This is a large download (~5GB). Re-check after install by opening a **new** terminal.
+- Note: the user must run subsequent build commands from a terminal that has the MSVC environment loaded, or use the "Developer Command Prompt for VS" shortcut that the installer creates.
+
+### 4. Nuitka and build helpers
+
+```cmd
+pip show nuitka
+```
+
+- If missing: `pip install nuitka zstandard ordered-set`
+- If pip itself is missing: resolve Python install first (step 1).
+
+---
+
+Once all prerequisites are confirmed, proceed with the build:
+
 ## Build locally on Windows
 
 ```cmd
 git clone --depth 1 https://github.com/searxng/searxng.git searxng-src
 pip install -e ./searxng-src
-pip install nuitka zstandard ordered-set
 python -m nuitka --onefile --windows-console-mode=attach --include-package=searx --include-package-data=searx --include-package=flask --include-package=flask_babel --include-package=babel --include-package=httpx --include-package=anyio --include-package=jinja2 --include-package=markupsafe --include-package=yaml --include-package=msgspec --include-package=lxml --output-filename=searxng-win.exe launcher.py
 ```
-
-Requires Python 3.11 and Visual Studio Build Tools (Desktop development with C++).
