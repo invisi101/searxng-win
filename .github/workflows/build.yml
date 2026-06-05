@@ -26,9 +26,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install --upgrade pip setuptools wheel
-          pip install -e ./searxng-src
-          pip install nuitka zstandard ordered-set
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install msgspec lxml babel flask flask-babel httpx pyyaml uvicorn
+          python -m pip install -e ./searxng-src
+          python -m pip install nuitka zstandard ordered-set
 
       - name: Print versions
         run: |
